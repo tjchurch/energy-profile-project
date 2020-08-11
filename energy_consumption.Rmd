@@ -1,0 +1,96 @@
+---
+title: "Energy Data"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data <- Energy_Data %>% 
+  filter(str_detect(MSN, "TCB"))
+data
+```
+
+
+```{r}
+nu<-lm(ca_total$Year ~ ca_total$Data + I(ca_total$Data^2))
+plot(ca_total$Data, ca_total$Year)
+abline(nu, lwd=3, col='red')
+plot(nu)
+coef(nu)
+```
+
+```{r}
+testt <- merge(nm_total, nm_prod, by="Year")
+testt
+#ggplot(testt$Data.x  testt$Data.y, testt$Year)
+
+require(lattice)
+df <- data.frame(x = testt$Year, y = testt$Data.x, z = testt$Data.y)
+
+xyplot( y + z ~ x, data=df, type = c('p','p','r','r'), col = c("blue", "red"), auto.key=T)
+```
+
+```{r}
+EnergyData <- data.table(Energy_Data, key="MSN", stringsAsFactors = TRUE)
+# filter by Year, State and MSN list
+plotdata2 <- EnergyData[as.character(MSN) %chin% c("BMTCB", "GETCB", "HYTCB", "SOTCB", "WYTCB") & StateCode == "CA"]
+plotdata2
+```
+
+```{r}
+testt <- merge(ca_renprod, ca_renewable, by="Year")
+testt
+#ggplot(testt$Data.x  testt$Data.y, testt$Year)
+
+require(lattice)
+df <- data.frame(x = testt$Year, y = testt$Data.x, z = testt$Data.y)
+
+xyplot( y + z ~ x, data=df, type = c('p','p','r','r'), col = c("blue", "red"), auto.key=T)
+```
+
+```{r}
+testt <- merge(nm_renprod, nm_renewable, by="Year")
+testt
+#ggplot(testt$Data.x  testt$Data.y, testt$Year)
+
+require(lattice)
+df <- data.frame(x = testt$Year, y = testt$Data.x, z = testt$Data.y)
+
+xyplot( y + z ~ x, data=df, type = c('o','r','r'), col = c("blue", "red"), auto.key=T)
+```
+
+```{r}
+testt <- merge(az_renprod, az_renewable, by="Year")
+testt
+#ggplot(testt$Data.x  testt$Data.y, testt$Year)
+
+require(lattice)
+df <- data.frame(x = testt$Year, y = testt$Data.x, z = testt$Data.y)
+
+xyplot( y + z ~ x, data=df, type = c('p','p','r','r'), col = c("blue", "red"), auto.key=T)
+```
+
+```{r}
+testCA <- Energy_Data %>%
+  filter(MSN %in% c("RETCB", "REPRB")) %>%
+  str_detect("CA")
+  #select(StateCode, MSN, Data) %>%
+  #mutate(pct = Data/sum(Data),
+         #lbl = scales::percent(pct))
+testCA
+
+```
+
+```{r}
+two <- lm(formula = ca_total$Data, ca_prod$Data ~ ca_total$Year)
+```
+```{r}
+plot(ca_expense$Data, ca_expense$Year, main = "title", xlab = "Data")
+```
+
+```{r}
+plot(ca_total$Data, ca_total$Year, main = Title)
+```
