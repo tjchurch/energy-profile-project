@@ -1,0 +1,169 @@
+---
+title: "total consumed"
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(magrittr)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(forecast)
+library(readxl)
+library(RCurl)
+```
+
+```{r}
+#load the dataset from MCM webstie
+download.file("http://www.mathmodels.org/Problems/2018/MCM-C/ProblemCData.xlsx", "temp.xlsx")
+Energy_Data <- read_excel("temp.xlsx")
+```
+total energy consumed in billion btu
+```{r}
+tx_total <- Energy_Data %>% 
+  filter(str_detect(MSN, "TETCB" )) %>%
+  filter(str_detect(StateCode, "TX"))
+#tx_total
+az_total <- Energy_Data %>% 
+  filter(str_detect(MSN, "TETCB" )) %>%
+  filter(str_detect(StateCode, "AZ"))
+#az_total
+#Filter DATA for specific MSN Code and State
+ca_total <- Energy_Data %>% 
+  filter(str_detect(MSN, "TETCB" )) %>%
+  filter(str_detect(StateCode, "CA"))
+#ca_total
+nm_total <- Energy_Data %>% 
+  filter(str_detect(MSN, "TETCB" )) %>%
+  filter(str_detect(StateCode, "NM"))
+#nm_total
+```
+
+```{r}
+scatter.smooth(x=tx_total$Year, y=tx_total$Data, main="TX total energy consumption")
+```
+
+```{r}
+#create a scatter plot with a smoothed line
+scatter.smooth(x=ca_total$Year, y=ca_total$Data, main="CA total energy consumption")
+```
+
+```{r}
+scatter.smooth(x=nm_total$Year, y=nm_total$Data, main="NM total energy consumption")
+```
+
+```{r}
+scatter.smooth(x=ca_total$Year, y=ca_total$Data, main="AZ total energy consumption")
+```
+
+```{r}
+# use ts() function to place in time series format
+CAT <- ts(ca_total$Data,frequency = 1,start = c(1960))
+#plot time series formatted data
+plot(CAT)
+# use auto.arima() function to get the optimal auto
+autoarimaCAT <- auto.arima(CAT)
+#forecasted data for 45 years
+forecastCAT <- forecast(autoarimaCAT, h=45)
+#show forecasted values
+forecastCAT
+#plot the forecasted data from auto arima model
+plot(forecastCAT, main = "CA Forecast Total Consumption", xlab = "Year", ylab = "Billion BTU")
+#plot residuals to see congruence or variance
+plot(forecastCAT$residuals)
+#plot the resuduals (sample vs. theoretical)
+qqnorm(forecastCAT$residuals)
+#determine how well present value correlated with past value
+acf(forecastCAT$residuals)
+#finds correlation of residuals with the next lag value
+pacf(forecastCAT$residuals)
+#determine the accuracy
+summary(autoarimaCAT)
+```
+
+```{r}
+NMT <- ts(nm_total$Data,frequency = 1,start = c(1960))
+plot(NMT)
+autoarimaNMT <- auto.arima(NMT)
+forecastNMT <- forecast(autoarimaNMT, h=45)
+forecastNMT
+plot(forecastNMT, main = "NM Forecast Total Consumption", xlab = "Year", ylab = "Billion BTU")
+plot(forecastNMT$residuals)
+qqnorm(forecastNMT$residuals)
+acf(forecastNMT$residuals)
+pacf(forecastNMT$residuals)
+summary(autoarimaNMT)
+#checkresiduals(forecastNMT)
+```
+
+```{r}
+AZT <- ts(az_total$Data,frequency = 1,start = c(1960))
+plot(AZT)
+autoarimaAZT <- auto.arima(AZT)
+forecastAZT <- forecast(autoarimaAZT, h=45)
+forecastAZT
+plot(forecastAZT, main = "AZ Forecast Total Consumption", xlab = "Year", ylab = "Billion BTU")
+plot(forecastAZT$residuals)
+qqnorm(forecastAZT$residuals)
+acf(forecastAZT$residuals)
+pacf(forecastAZT$residuals)
+summary(autoarimaAZT)
+```
+
+```{r}
+TXT <- ts(tx_total$Data,frequency = 1,start = c(1960))
+plot(TXT)
+autoarimaTXT <- auto.arima(TXT)
+forecastTXT <- forecast(autoarimaTXT, h=45)
+forecastTXT
+plot(forecastTXT, main = "TX Forecast Total Consumption", xlab = "Year", ylab = "Billion BTU")
+plot(forecastTXT$residuals)
+qqnorm(forecastTXT$residuals)
+acf(forecastTXT$residuals)
+pacf(forecastTXT$residuals)
+summary(autoarimaTXT)
+```
+
+```{r}
+#create linear model
+ca_tc <- lm(formula = Data ~ Year, data = ca_total)
+#determine accuracy
+summary(ca_tc)
+#residuals
+plot(ca_tc)
+#plot data points with regression line
+with(ca_total,plot(Year, Data, main = "CA Total Consumption"))
+abline(ca_tc, lwd=3, col='red')
+```
+
+```{r}
+nm_tc <- lm(formula = Data ~ Year, data = nm_total)
+summary(nm_tc)
+plot(nm_tc)
+with(nm_total,plot(Year, Data, main = "NM Total Consumption"))
+abline(nm_tc, lwd=3, col='red')
+```
+
+```{r}
+az_tc <- lm(formula = Data ~ Year, data = az_total)
+summary(az_tc)
+plot(az_tc)
+with(az_total,plot(Year, Data, main = "AZ Total Consumption"))
+abline(az_tc, lwd=3, col='red')
+```
+
+```{r}
+tx_tc <- lm(formula = Data ~ Year, data = tx_total)
+summary(tx_tc)
+plot(tx_tc)
+with(tx_total,plot(Year, Data, main = "TX Total Consumption"))
+abline(tx_tc, lwd=3, col='red')
+```
